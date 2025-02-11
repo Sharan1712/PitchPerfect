@@ -43,11 +43,11 @@ class PitchPerfect:
             Include in Your Cover Letter:
             Start with: "Hi [hiring manager's name],"
 
-            Introduce yourself as a graduate from [name of your university], looking for a role as a [Job Title].
+            Introduce yourself as a graduate from [name of your university], looking for a role as a [Job Title]. Add 2 lines of brief introduction of my profile.
 
             Begin a new paragraph with: "Here are reasons that make me a great fit for the role:". 
 
-            List 3-5 reasons based on the requirements from the job description, where these should be in the order that are in the job description. Explain how my skills align with the role's requirements (Include impactful numbers and results from my CV to show alignment)
+            List at least 4 reasons based on the requirements from the job description, where these should be in the order that are in the job description. Explain how my skills align with the role's requirements (Include impactful numbers and results from my CV to show alignment)
 
             Conclude with: "Please find my CV attached below. I look forward to hearing from you."
             End with: "Best wishes, [Your Name]"
@@ -75,7 +75,7 @@ class PitchPerfect:
         
         return user_prompt
     
-    def generate_cover_letter(self, job_title, company, job_desc, cv_data, word_limit = 300, temp = 0.5, top_p = 0.9):
+    def generate_cover_letter(self, job_title, company, job_desc, cv_data, word_limit = 400, temp = 0.7, top_p = 0.9):
         
         user_prompt = self.prepare_user_prompt(job_title, company, job_desc, cv_data, word_limit)
         
@@ -91,7 +91,15 @@ class PitchPerfect:
             top_p = top_p
         )
         
-        return response.choices[0].message.content
+        cover_letter = response.choices[0].message.content
+        
+        if "<think>" in cover_letter:
+            reason = cover_letter.split("</think>")[0].replace("<think>","")
+            cover_letter = cover_letter.split("</think>")[1]
+        else:
+            reason = "This model doesn't offer reasoning."
+        
+        return cover_letter, reason
         
         
 

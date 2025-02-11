@@ -15,8 +15,8 @@ def initialize_session_state():
         
     if 'pitch_perfect' not in st.session_state:
         st.session_state.pitch_perfect = None
-        
-initialize_session_state()
+
+initialize_session_state()        
 
 with st.sidebar:
     st.title("Model API Configuration")
@@ -52,22 +52,25 @@ with st.sidebar:
             st.error(f"Error initializing API clients: {str(e)}")
             st.session_state.api_configured = False
             
-        if st.session_state.api_configured:
-            upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])
-            if upload_cv is not None:
-                st.success(f"File uploaded successfully: {upload_cv.name}")
-        
-                temp_file = "./temp.pdf"
-                with open(temp_file, "wb") as file:
-                    file.write(upload_cv.getvalue())
-                    file_name = upload_cv.name
-        
-                cv_data  = pdf_loader(temp_file)
+    if st.session_state.api_configured:
+        upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])
+        if upload_cv is not None:
+            st.success(f"File uploaded successfully: {upload_cv.name}")
+    
+            temp_file = "./temp.pdf"
+            with open(temp_file, "wb") as file:
+                file.write(upload_cv.getvalue())
+                file_name = upload_cv.name
+    
+            cv_data  = pdf_loader(temp_file)
     
 if not st.session_state.api_configured:
     st.warning("Please configure the models in the sidebar to proceed")
     st.stop()
     
+st.title("Pitch Perfect")
+st.subheader("A cutting-edge app that crafts the perfect cover letter, tailored to land your dream job effortlessly!")
+
 col1, col2 = st.columns(2)
 
 # with col1:
@@ -96,10 +99,12 @@ job_description = st.text_area("Please paste the entire job description here:")
 if st.button("Generate Cover Letter"):
     with st.spinner("Generating Cover Letter....."):
         client = st.session_state.pitch_perfect
-        cover_letter = client.generate_cover_letter(job_title = job_title, 
+        cover_letter, reason = client.generate_cover_letter(job_title = job_title, 
                                                     company = company_name, 
                                                     job_desc = job_description,
                                                     cv_data = cv_data)
     
     st.success("Cover Letter Generated")
-    st.markdown(cover_letter) 
+    st.markdown(cover_letter)
+    with st.expander("Model Reasoning:"):
+        st.write(reason) 
