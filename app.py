@@ -51,29 +51,41 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Error initializing API clients: {str(e)}")
             st.session_state.api_configured = False
+            
+        if st.session_state.api_configured:
+            upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])
+            if upload_cv is not None:
+                st.success(f"File uploaded successfully: {upload_cv.name}")
+        
+                temp_file = "./temp.pdf"
+                with open(temp_file, "wb") as file:
+                    file.write(upload_cv.getvalue())
+                    file_name = upload_cv.name
+        
+                cv_data  = pdf_loader(temp_file)
     
 if not st.session_state.api_configured:
     st.warning("Please configure the models in the sidebar to proceed")
     st.stop()
     
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
-with col1:
-    upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])
-    if upload_cv is not None:
-        st.success(f"File uploaded successfully: {upload_cv.name}")
+# with col1:
+#     upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])
+#     if upload_cv is not None:
+#         st.success(f"File uploaded successfully: {upload_cv.name}")
         
-        temp_file = "./temp.pdf"
-        with open(temp_file, "wb") as file:
-            file.write(upload_cv.getvalue())
-            file_name = upload_cv.name
+#         temp_file = "./temp.pdf"
+#         with open(temp_file, "wb") as file:
+#             file.write(upload_cv.getvalue())
+#             file_name = upload_cv.name
         
-        cv_data  = pdf_loader(temp_file)
+#         cv_data  = pdf_loader(temp_file)
     
-with col2:
+with col1:
     job_title = st.text_input("Job Title", key="job_title")
     
-with col3:
+with col2:
     company_name = st.text_input("Company Name", key="company_name")
 
 # if upload_cv:
