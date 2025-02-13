@@ -4,7 +4,7 @@ from utils.utils import PitchPerfect, pdf_loader
 
 st.set_page_config(
     page_title = "Pitch Perfect",
-    page_icon = "🤖",
+    page_icon = "📝",
     layout = "wide"
 )
 
