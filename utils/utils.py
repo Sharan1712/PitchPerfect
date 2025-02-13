@@ -24,23 +24,25 @@ class PitchPerfect:
         
         if model_family == "gpt":
             self.client = OpenAI(api_key = token)
-            try:
-                self.client.models.list()
-            except openai.AuthenticationError:
-                print("❌ Invalid API key.")
-                self.client = "INVALID"
-                self.error = "❌ Invalid API key."
-            except Exception as e:
-                print(f"❌ An error occurred: {e}")
-                self.client = "INVALID"
-                self.error = "❌ An error occurred: {e}"
-        
+            self.check_openai_token()
         elif model_family == "together":
             self.client = InferenceClient(provider = "together", api_key = token)
             self.check_hf_token(token)
-        
         else:
             self.client = InferenceClient(provider="hf-inference", api_key = token)
+            self.check_hf_token(token)
+            
+    def check_openai_token(self):
+        try:
+            self.client.models.list()
+        except openai.AuthenticationError:
+            print("❌ Invalid API key.")
+            self.client = "INVALID"
+            self.error = "❌ Invalid API key."
+        except Exception as e:
+            print(f"❌ An error occurred: {e}")
+            self.client = "INVALID"
+            self.error = "❌ An error occurred: {e}"
             
     def check_hf_token(self, token):
         headers = {"Authorization": f"Bearer {token}"}
