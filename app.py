@@ -1,4 +1,5 @@
 import streamlit as st
+import openai
 from utils.constants import model_family_mapping, model_name_mapping
 from utils.utils import PitchPerfect, pdf_loader
 
@@ -41,16 +42,20 @@ with st.sidebar:
         token = st.text_input("OpenAI API Key", type="password", key="openai_key")
     else:
         token = st.text_input("Hugging Face Token", type="password", key="hf_token")
-        
-    if st.button("Initialize with the provided keys"):
-        try:
-            st.session_state.pitch_perfect = PitchPerfect(model = model_name, model_family = model_family, token = token)
-            st.session_state.api_configured = True
-            st.success("Successfully configured the API clients with provided keys!")
-        
-        except Exception as e:
-            st.error(f"Error initializing API clients: {str(e)}")
-            st.session_state.api_configured = False
+    
+    if token != "":
+        if st.button("Initialize with the provided keys"):
+            try:
+                st.session_state.pitch_perfect = PitchPerfect(model = model_name, model_family = model_family, token = token)
+                if st.session_state.pitch_perfect.client == "INVALID":
+                    st.error(st.session_state.pitch_perfect.error)
+                else:
+                    st.session_state.api_configured = True
+                    st.success("Successfully configured the API clients with provided keys!")
+            
+            except Exception as e:
+                st.error(f"Error initializing API clients: {str(e)}")
+                st.session_state.api_configured = False
             
     if st.session_state.api_configured:
         upload_cv = st.file_uploader("Upload CV in PDF format", type=["pdf"])

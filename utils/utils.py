@@ -1,5 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 from huggingface_hub import InferenceClient
+import openai
 from openai import OpenAI
 from utils.constants import system_prompt
 
@@ -22,12 +23,33 @@ class PitchPerfect:
         
         if model_family == "gpt":
             self.client = OpenAI(api_key = token)
+            try:
+                self.client.models.list()
+            except openai.AuthenticationError:
+                print("❌ Invalid API key.")
+                self.client = "INVALID"
+                self.error = "❌ Invalid API key."
+            except Exception as e:
+                print(f"❌ An error occurred: {e}")
+                self.client = "INVALID"
+                self.error = "❌ An error occurred: {e}"
+        
         elif model_family == "together":
             self.client = InferenceClient(provider = "together", api_key = token)
         else:
             self.client = InferenceClient(provider="hf-inference", api_key = token)
             
-        
+    def check_api_key(self):
+        try:
+            # Make a simple request to test the API key
+            self.client.models.list()
+            print("✅ API key is valid.")
+        except openai.APIConnectionError:
+            print("❌ Network error. Please check your connection.")
+        except openai.AuthenticationError:
+            print("❌ Invalid API key.")
+        except Exception as e:
+            print(f"❌ An error occurred: {e}")
             
     def prepare_user_prompt(self, job_title, company, job_desc, cv_data, word_limit):
         
