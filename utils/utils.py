@@ -1,5 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 from huggingface_hub import InferenceClient
+import requests
 import openai
 from openai import OpenAI
 from utils.constants import system_prompt
@@ -36,20 +37,46 @@ class PitchPerfect:
         
         elif model_family == "together":
             self.client = InferenceClient(provider = "together", api_key = token)
+            self.check_hf_token(token)
+        
         else:
             self.client = InferenceClient(provider="hf-inference", api_key = token)
             
-    def check_api_key(self):
+    def check_hf_token(self, token):
+        headers = {"Authorization": f"Bearer {token}"}
         try:
-            # Make a simple request to test the API key
-            self.client.models.list()
-            print("✅ API key is valid.")
-        except openai.APIConnectionError:
-            print("❌ Network error. Please check your connection.")
-        except openai.AuthenticationError:
-            print("❌ Invalid API key.")
+            response = requests.get("https://huggingface.co/api/whoami", headers=headers)
+            if response.status_code == 200:
+                user_info = response.json()
+                print(f"✅ Token is valid. Logged in as: {user_info.get('name', 'Unknown User')}")
+            elif response.status_code == 401:
+                print("❌ Invalid Hugging Face token.")
+                self.client = "INVALID"
+                self.error = "❌ Invalid HF Token."
+            elif response.status_code == 403:
+                print("❌ Token does not have the necessary permissions.")
+                self.client = "INVALID"
+                self.error = "❌ Token does not have the necessary permissions."
+            else:
+                print(f"❌ Unexpected error: {response.status_code} - {response.text}")
+                self.client = "INVALID"
+                self.error = f"❌ Unexpected error: {response.status_code} - {response.text}"
         except Exception as e:
-            print(f"❌ An error occurred: {e}")
+            print(f"❌ An unexpected error occurred: {e}")
+            self.client = "INVALID"
+            self.error = f"❌ An unexpected error occurred: {e}"
+            
+    # def check_api_key(self):
+    #     try:
+    #         # Make a simple request to test the API key
+    #         self.client.models.list()
+    #         print("✅ API key is valid.")
+    #     except openai.APIConnectionError:
+    #         print("❌ Network error. Please check your connection.")
+    #     except openai.AuthenticationError:
+    #         print("❌ Invalid API key.")
+    #     except Exception as e:
+    #         print(f"❌ An error occurred: {e}")
             
     def prepare_user_prompt(self, job_title, company, job_desc, cv_data, word_limit):
         

@@ -2,3 +2,4 @@ huggingface_hub==0.28.1
 langchain_community==0.3.17
 openai==1.61.1
 streamlit==1.42.0
+pypdf
